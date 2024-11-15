@@ -1,0 +1,23 @@
+version: '3'
+services:
+  ray-head:
+    build: .
+    container_name: ray-head
+    ports:
+      - "8265:8265"  # Ray Dashboard
+    command: >
+      ray start --head --port=6379 --dashboard-host=0.0.0.0
+    volumes:
+      - .:/app
+
+  ray-worker:
+    build: .
+    depends_on:
+      - ray-head
+    command: >
+      ray start --address='ray-head:6379'
+    environment:
+      - RAY_HEAD_SERVICE_HOST=ray-head
+    volumes:
+      - .:/app
+    scale: 2  # Number of worker nodes
